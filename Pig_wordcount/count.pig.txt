@@ -1,0 +1,20 @@
+records = LOAD '/user/cloudera/pig_assign/input_pig.txt' USING PigStorage('-')
+AS (date:chararray, month:chararray, other:chararray);
+DUMP records;
+B = FOREACH records GENERATE flatten(TOKENIZE((chararray)$2)) AS word;
+DUMP B;
+C = FOREACH B GENERATE LOWER(word) AS query;
+DUMP C;
+D = FILTER C BY query IN ('hackathon','java','chicago','dec');
+DUMP D;
+M = FOREACH records GENERATE LOWER(month) AS querym;
+DUMP M;
+N = FILTER M BY querym IN ('hackathon','java','chicago','dec');
+DUMP N;
+P = UNION D,N;
+DUMP P;
+E = GROUP P BY $0;
+DUMP E;
+F = FOREACH E GENERATE group, COUNT(P);
+DUMP F;
+STORE F INTO '/user/cloudera/pig_assign/output.txt';
